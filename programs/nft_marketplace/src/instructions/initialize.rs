@@ -46,3 +46,17 @@ pub struct Initialize<'info> {
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
+
+impl<'info> Initialize<'info> {
+    pub fn init(&mut self, name: String, fee: u16, bumps: InitializeBumps) -> Result<()> {
+        self.marketplace.set_inner(Marketplace {
+            admin: self.admin.key(),
+            fee,
+            bump: bumps.marketplace,
+            treasury_bump: bumps.treasury,
+            rewards_mint_bump: bumps.rewards_mint,
+            name,
+        });
+        Ok(())
+    }
+}
