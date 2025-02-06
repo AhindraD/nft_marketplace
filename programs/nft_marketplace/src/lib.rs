@@ -14,8 +14,4 @@ declare_id!("72kseoyebwFZ2yXzVm2CTgcEgqVyxinxumhYYuA8Rind");
 #[program]
 pub mod nft_marketplace {
     use super::*;
-
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
-    }
 }
