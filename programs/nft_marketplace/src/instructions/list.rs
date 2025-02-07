@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{Mint, TokenAccount};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{Mint, TokenAccount, TokenInterface},
+};
 
 use crate::{Listing, Marketplace};
 
@@ -24,9 +27,10 @@ pub struct List<'info> {
     pub maker_ata: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        mut,
+        init,
+        payer=maker,
         associated_token::mint=maker_mint,
-        associated_token::authority=maker
+        associated_token::authority=listing,
     )]
     pub vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -42,5 +46,7 @@ pub struct List<'info> {
     )]
     pub listing: Account<'info, Listing>,
 
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
