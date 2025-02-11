@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
+    metadata::Metadata,
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
@@ -45,6 +46,12 @@ pub struct List<'info> {
         bump
     )]
     pub listing: Account<'info, Listing>,
+
+    pub collection_mint: InterfaceAccount<'info, Mint>,
+
+    #[account()]
+    //metadata standard, derived from metadata program
+    pub metadata_program: Program<'info, Metadata>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
