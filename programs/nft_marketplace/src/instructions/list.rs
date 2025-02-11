@@ -47,10 +47,18 @@ pub struct List<'info> {
     )]
     pub listing: Account<'info, Listing>,
 
-    pub collection_mint: InterfaceAccount<'info, Mint>,
+    pub collection_mint: InterfaceAccount<'info, Mint>, //for authenticating the nft-source
 
-    #[account()]
-    //metadata standard, derived from metadata program
+    #[account(
+        seeds=[
+            b"metadata",
+            metadata_program.key().as_ref(),
+            maker_mint.key().as_ref(),
+        ],
+        seeds::program=metadata_program.key(),
+        bump
+    )]
+    //metadata standard - pre-defined SEEDS not arbitary, derived from metadata program
     pub metadata_program: Program<'info, Metadata>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
