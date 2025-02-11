@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    metadata::{Metadata, MetadataAccount},
+    metadata::{MasterEditionAccount, Metadata, MetadataAccount},
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
@@ -57,14 +57,26 @@ pub struct List<'info> {
         ],//metadata standard - PRE-defined SEEDS not arbitary, account derived from metadata program
 
         seeds::program=metadata_program.key(),
-        // a way of saying we/our-program don't own this, meatdata prgram owns this
+        // a way of saying we/our-program don't own this, meatdata program owns this
 
-        //verifying the collection by adding CONSTRAINTS
-        constraint=metadata.collection.as_ref().unwrap().key.as_ref()==collection_mint.key().as_ref() @MarketPlaceError::InvalidCollection,
-        constraint=metadata.collection.as_ref().unwrap().verified==true,
+        //verifying the collection by adding CONSTRAINTS - 2 PART verification
+        constraint=metadata.collection.as_ref().unwrap().key.as_ref()==collection_mint.key().as_ref() @MarketPlaceError::InvalidCollection,//verify if same collection as promised
+        constraint=metadata.collection.as_ref().unwrap().verified==true,//if the collection is verfied member
         bump
     )]
     pub metadata: Account<'info, MetadataAccount>,
+
+    #[account(
+        seeds=[
+            b"metadata",
+            metadata_program.key().as_ref(),
+            maker_mint.key().as_ref(),
+            b"edition"
+        ],
+        seeds::program=metadata_program.key(),
+        bump
+    )]
+    pub master_edition: Program<'info, MasterEditionAccount>,
 
     pub metadata_program: Program<'info, Metadata>,
 
