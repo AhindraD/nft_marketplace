@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::{MasterEditionAccount, Metadata, MetadataAccount},
-    token_interface::{Mint, TokenAccount, TokenInterface},
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
 use crate::{error::MarketPlaceError, Listing, Marketplace};
@@ -72,15 +72,40 @@ pub struct List<'info> {
             metadata_program.key().as_ref(),
             maker_mint.key().as_ref(),
             b"edition"
-        ],
+        ],//metadata standard - PRE-defined SEEDS
         seeds::program=metadata_program.key(),
         bump
     )]
-    pub master_edition: Program<'info, MasterEditionAccount>,
+    pub master_edition: Account<'info, MasterEditionAccount>,
 
     pub metadata_program: Program<'info, Metadata>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
+}
+
+impl<'info> List<'info> {
+    pub fn create_listing(&mut self, price: u64, bumps: &ListBumps) -> Result<()> {
+        self.listing.set_inner(Listing {
+            maker: self.maker.key(),
+            price,
+            mint: self.maker_mint.key(),
+            bump: bumps.listing,
+        });
+        Ok(())
+    }
+
+    pub fn deposit_nft(&mut self) -> Result<()> {
+        let cpi_program = self.token_program.to_account_info();
+        let cpi_account_options = TransferChecked {
+            from: self.maker_ata.to_account_info(),
+            to: self.vault.to_account_info(),
+            authority: self.maker.to_account_info(),
+            mint: self.maker_mint.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_account_options);
+        transfer_checked(cpi_ctx, 1, self.maker_mint.decimals)?;
+        Ok(())
+    }
 }

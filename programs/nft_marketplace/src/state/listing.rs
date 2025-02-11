@@ -5,7 +5,7 @@ use crate::ANCHOR_DISCRIMINATOR;
 #[account]
 pub struct Listing {
     pub maker: Pubkey,
-    pub amount: u64,
+    pub price: u64,
     pub mint: Pubkey,
     pub bump: u8,
 }
