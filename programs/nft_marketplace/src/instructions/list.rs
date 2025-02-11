@@ -1,11 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    metadata::Metadata,
+    metadata::{Metadata, MetadataAccount},
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
-use crate::{Listing, Marketplace};
+use crate::{error::MarketPlaceError, Listing, Marketplace};
 
 #[derive(Accounts)]
 pub struct List<'info> {
@@ -54,11 +54,18 @@ pub struct List<'info> {
             b"metadata",
             metadata_program.key().as_ref(),
             maker_mint.key().as_ref(),
-        ],
+        ],//metadata standard - PRE-defined SEEDS not arbitary, account derived from metadata program
+
         seeds::program=metadata_program.key(),
+        // a way of saying we/our-program don't own this, meatdata prgram owns this
+
+        //verifying the collection by adding CONSTRAINTS
+        constraint=metadata.collection.as_ref().unwrap().key.as_ref()==collection_mint.key().as_ref() @MarketPlaceError::InvalidCollection,
+        constraint=metadata.collection.as_ref().unwrap().verified==true,
         bump
     )]
-    //metadata standard - pre-defined SEEDS not arbitary, derived from metadata program
+    pub metadata: Account<'info, MetadataAccount>,
+
     pub metadata_program: Program<'info, Metadata>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
