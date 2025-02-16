@@ -38,8 +38,8 @@ pub struct Initialize<'info> {
             marketplace.key().as_ref()
         ],
         bump,
-        mint::authority=admin,
-        mint::decimals=9,
+        mint::authority=marketplace,
+        mint::decimals=6,
     )]
     pub rewards_mint: InterfaceAccount<'info, Mint>,
 
