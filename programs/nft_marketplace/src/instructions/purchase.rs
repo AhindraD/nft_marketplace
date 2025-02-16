@@ -4,7 +4,7 @@ use anchor_lang::{
 };
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
 use crate::{Listing, Marketplace};
@@ -109,5 +109,23 @@ impl<'info> Purchase<'info> {
         Ok(())
     }
     //2. transfer nft from vault to taker_ata
-    //3. close accouts
+    pub fn transfer_nft(&mut self) -> Result<()> {
+        let cpi_program = self.token_program.to_account_info();
+        let cpi_account_options = TransferChecked {
+            from: self.vault.to_account_info(),
+            to: self.taker_ata.to_account_info(),
+            authority: self.listing.to_account_info(),
+            mint: self.maker_mint.to_account_info(),
+        };
+        let seeds = [
+            &self.marketplace.key().to_bytes()[..],
+            &self.maker_mint.key().to_bytes()[..],
+            &[self.listing.bump],
+        ];
+        let signer_seeds = &[&seeds[..]];
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_account_options, signer_seeds);
+        transfer_checked(cpi_ctx, 1, self.maker_mint.decimals)?;
+        Ok(())
+    }
+    //3. close the vault
 }
