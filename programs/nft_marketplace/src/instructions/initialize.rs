@@ -48,7 +48,7 @@ pub struct Initialize<'info> {
 }
 
 impl<'info> Initialize<'info> {
-    pub fn init(&mut self, name: String, fee: u16, bumps: InitializeBumps) -> Result<()> {
+    pub fn init(&mut self, name: String, fee: u16, bumps: &InitializeBumps) -> Result<()> {
         require!(name.len() < (4 + 33), MarketPlaceError::NameTooLong);
 
         self.marketplace.set_inner(Marketplace {
