@@ -19,4 +19,17 @@ pub mod nft_marketplace {
         ctx.accounts.init(name, fee, &ctx.bumps)?;
         Ok(())
     }
+
+    pub fn list(ctx: Context<List>, price: u64) -> Result<()> {
+        ctx.accounts.create_listing(price, &ctx.bumps)?;
+        ctx.accounts.deposit_nft()?;
+        Ok(())
+    }
+
+    pub fn purchase(ctx: Context<Purchase>) -> Result<()> {
+        ctx.accounts.pay()?;
+        ctx.accounts.transfer_nft()?;
+        ctx.accounts.close_vault()?;
+        Ok(())
+    }
 }
