@@ -1,4 +1,7 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{
+    prelude::*,
+    system_program::{transfer, Transfer},
+};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{Mint, TokenAccount, TokenInterface},
@@ -6,6 +9,9 @@ use anchor_spl::{
 
 use crate::{Listing, Marketplace};
 
+//HOMEWORK
+//Reward the maker and taker for participating in marketplace
+//use reward token mint as Reward
 #[derive(Accounts)]
 pub struct Purchase<'info> {
     #[account(mut)]
@@ -79,7 +85,29 @@ pub struct Purchase<'info> {
 }
 
 impl<'info> Purchase<'info> {
-    //1. taker send sol to maker
+    //1. taker send sol to maker & maker sends fee to treasury
+    pub fn pay(&mut self) -> Result<()> {
+        let cpi_program = self.system_program.to_account_info();
+        let cpi_accounts_options1 = Transfer {
+            from: self.taker.to_account_info(),
+            to: self.maker.to_account_info(),
+        };
+        let cpi_ctx1 = CpiContext::new(cpi_program, cpi_accounts_options1);
+        let nft_price = self.listing.price;
+        //taker sending full price to maker
+        transfer(cpi_ctx1, nft_price)?;
+
+        let cpi_program = self.system_program.to_account_info();
+        let cpi_account_options2 = Transfer {
+            from: self.maker.to_account_info(),
+            to: self.vault.to_account_info(),
+        };
+        let cpi_ctx2 = CpiContext::new(cpi_program, cpi_account_options2);
+        let marketplace_fee = self.marketplace.fee as u64;
+        //maker paying the fee from sale made
+        transfer(cpi_ctx2, marketplace_fee)?;
+        Ok(())
+    }
     //2. transfer nft from vault to taker_ata
     //3. close accouts
 }
